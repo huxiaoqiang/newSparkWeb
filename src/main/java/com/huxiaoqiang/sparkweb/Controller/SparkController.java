@@ -6,7 +6,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.fastjson.JSONObject;
+
 import java.util.HashMap;
+
+import org.apache.spark.deploy.SparkSubmit;
 
 import java.util.Map;
 
@@ -16,12 +19,10 @@ public class SparkController {
 
     private String Master = "spark://192.168.3.200:7077";
 
-    @RequestMapping(value = {"/index","/"})
+    @RequestMapping(value = {"/index", "/"})
     public String index() {
         return "index";
     }
-
-
 
 
     @RequestMapping(value = "/submit_alpha", method = {RequestMethod.POST})
@@ -54,7 +55,8 @@ public class SparkController {
         };
         Map<String, String> result = new HashMap<String, String>();
         try {
-//            SparkSubmit.main(SubmitString);
+            Runnable alpha = new SparkAlphaMiner(SubmitString);
+            new Thread(alpha).start();
             result.put("status", "success");
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -96,20 +98,57 @@ public class SparkController {
                 jar,
                 "--filePath", filePath,
                 "--outfilePath", outFilePath,
-                "--conf", "DeltaA=" + DeltaA,
-                "--conf", "DeltaL1L=" + DeltaL1L,
-                "--conf", "DeltaL2L=" + DeltaL2L,
-                "--conf", "DeltaLong=" + DeltaLong,
-                "--conf", "DeltaRel=" + DeltaRel
+                "--DeltaA", DeltaA,
+                "--DeltaL1L", DeltaL1L,
+                "--DeltaL2L", DeltaL2L,
+                "--DeltaLong", DeltaLong,
+                "--DeltaRel", DeltaRel
         };
         Map<String, String> result = new HashMap<String, String>();
         try {
-//            SparkSubmit.main(SubmitString);
+            Runnable fhm = new SparkFHM(SubmitString);
+            new Thread(fhm).start();
             result.put("status", "success");
         } catch (Exception e) {
             result.put("status", "failed");
             result.put("errorMsg", e.getMessage());
         }
         return result;
+    }
+}
+
+class SparkAlphaMiner implements Runnable {
+
+    public String[] args;
+
+    public SparkAlphaMiner(String[] args) {
+        this.args = args;
+    }
+
+    public void run() {
+        System.out.println("Start Spark Alpha Miner");
+        try {
+            SparkSubmit.main(this.args);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+class SparkFHM implements Runnable {
+
+    public String[] args;
+
+    public SparkFHM(String[] args) {
+        this.args = args;
+    }
+
+    public void run() {
+        System.out.println("Start Spark Flexible Heuristic Miner");
+        try {
+            SparkSubmit.main(this.args);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

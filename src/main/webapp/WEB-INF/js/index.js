@@ -13,7 +13,7 @@ $(function () {
             submit: function () {
                 console.log({param: JSON.stringify(this._data)});
                 if(this.algorithm === 'Spark Aplha Miner'){
-                    $.post("/spark/submit_alpha", {
+                    $.post("submit_alpha", {
                         param: JSON.stringify(this._data)
                     }, function (resp) {
                         if(resp.status==="success"){
@@ -25,7 +25,7 @@ $(function () {
                     });
                 }
                 else{
-                    $.post("/spark/submit_fhm", {
+                    $.post("submit_fhm", {
                         param: JSON.stringify(this._data)
                     }, function (resp) {
                         if(resp.status==="success"){
